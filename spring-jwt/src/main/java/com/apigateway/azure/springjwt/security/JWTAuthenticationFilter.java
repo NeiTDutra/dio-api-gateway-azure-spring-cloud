@@ -52,7 +52,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     protected void successfulAuthentication(HttpServletRequest req,
                                             HttpServletResponse res,
                                             FilterChain chain,
-                                            Authentication auth) throws IllegalArgumentException, JWTCreationException {
+                                            Authentication auth) throws IOException, ServletException {
 
         try {
             String token = JWT.create()
