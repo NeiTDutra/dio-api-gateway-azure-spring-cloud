@@ -3,6 +3,7 @@ package com.apigateway.azure.springjwt.security;
 import com.apigateway.azure.springjwt.data.UserData;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTCreationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -28,8 +29,8 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         this.authenticationManager = authenticationManager;
     }
 
-//    @Override
-    public Authentication attempAuthentication(HttpServletRequest req,
+    @Override
+    public Authentication attemptAuthentication(HttpServletRequest req,
                                                HttpServletResponse res) throws AuthenticationException {
 
         try {
@@ -47,17 +48,27 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         }
     }
 
-//    @Override
-    protected void successFullAuthentication(HttpServletRequest req,
+    @Override
+    protected void successfulAuthentication(HttpServletRequest req,
                                             HttpServletResponse res,
                                             FilterChain chain,
-                                            Authentication auth) throws IOException, ServletException {
+                                            Authentication auth) throws IllegalArgumentException, JWTCreationException {
 
-        String token = JWT.create()
-                .withSubject(((User) auth.getPrincipal()).getUsername())
-                .withExpiresAt(new Date(System.currentTimeMillis() + SecurityConstants.EXPIRATION_TIME))
-                .sign(Algorithm.HMAC512(SecurityConstants.SECRET.getBytes()));
+        try {
+            String token = JWT.create()
+                    .withSubject(((User) auth.getPrincipal()).getUsername())
+                    .withExpiresAt(new Date(System.currentTimeMillis() + SecurityConstants.EXPIRATION_TIME))
+                    .sign(Algorithm.HMAC512(SecurityConstants.SECRET.getBytes()));
 
-        res.addHeader(SecurityConstants.HEADER_STRING, SecurityConstants.TOKEN_PREFIX + token);
+            res.addHeader(SecurityConstants.HEADER_STRING, SecurityConstants.TOKEN_PREFIX + token);
+        }
+        catch (IllegalArgumentException e) {
+
+            e.printStackTrace();
+        }
+        catch (JWTCreationException e) {
+
+            e.printStackTrace();
+        }
     }
 }
